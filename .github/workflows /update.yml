@@ -1,0 +1,36 @@
+# Check out, build and push build to master branch.
+# Currently, submitting a PR upstream is done manually.
+
+name: Update Main Branch to latest stable release
+
+on:
+  # For now this is manually triggered
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # check out main branch on this repo and set up node
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.AUTH_TOKEN }}
+          ref: "main"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      # install, build, and commit
+      - run: |
+          git config --global user.email "bryan.michael.wolf@gmail.com"
+          git config --global user.name "Snarling"
+          rm -rf dist
+          git clone --branch stable https://github.com/bitburner-official/bitburner-src temp
+          cd temp
+          npm install
+          npm run build
+          mv .app/* ..
+          cd ..
+          git add dist
+          git add index.html
+          git commit -m "Update to latest stable"
+          git push origin
